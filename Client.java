@@ -15,6 +15,7 @@ class Jogador {
 	int estado = STANDING;
 	int xposicao = 972;
 	int yposicao = 548;
+	int underSpace;
 	
 	
 	Jogador(int numero) {
@@ -34,8 +35,6 @@ class Client extends JFrame {
 	Image fundo = null;
 	Jogador jogadorA = new Jogador(1);
 	//Jogador jogadorB = new Jogador();
-	final int BACKGROUND = 0;
-	int height;
 	Desenho tela = new Desenho();
 
 	class Desenho extends JPanel{
@@ -53,10 +52,12 @@ class Client extends JFrame {
 		public void paintComponent(Graphics g) {
 	    	super.paintComponent(g);
 
-			g.drawImage(img[BACKGROUND], 0, 0, getSize().width, getSize().height, this);
 	    	g.drawImage(fundo, 0, 0, getSize().width, getSize().height, this);
-	    	g.drawImage(jogadorA.bala, jogadorA.xposicao, jogadorA.yposicao, 10, 4, this);
-			g.drawImage(jogadorA.img[jogadorA.estado], getSize().width - jogadorA.img[jogadorA.estado].getWidth(this) - 10, getSize().height - jogadorA.img[jogadorA.estado].getHeight(this) - 20, jogadorA.img[jogadorA.estado].getWidth(this), jogadorA.img[jogadorA.estado].getHeight(this), this);
+	    	g.drawImage(jogadorA.bala, jogadorA.xposicao, jogadorA.yposicao, 15, 8, this);
+			g.drawImage(jogadorA.img[jogadorA.estado], getSize().width - jogadorA.img[jogadorA.estado].getWidth(this) - 10,
+		 		getSize().height - jogadorA.img[jogadorA.estado].getHeight(this) - jogadorA.underSpace, 
+		 		jogadorA.img[jogadorA.estado].getWidth(this),
+		 		jogadorA.img[jogadorA.estado].getHeight(this), this);
 
     	}
 		
@@ -86,18 +87,18 @@ class Client extends JFrame {
 	}
 
 	public class Pular extends Thread{
-		int y = height;
-		final int MAX = img[STANDING1].getHeight(tela);
+		int y = jogadorA.underSpace;
+		final int MAX = jogadorA.img[jogadorA.STANDING].getHeight(tela);
 		public void run(){
-			while(height < MAX){
-				height++;
+			while(jogadorA.underSpace < MAX){
+				jogadorA.underSpace++;
 				repaint();
 				try{
 					sleep(2);
 				} catch (InterruptedException e) {};
 			}
-			while(height > y){
-				height--;
+			while(jogadorA.underSpace > y){
+				jogadorA.underSpace--;
 				repaint();
 				try{
 					sleep(2);
@@ -128,7 +129,7 @@ class Client extends JFrame {
 	    add(tela);
 	    pack();
 	    setVisible(true);
-	    height = (int)Math.ceil(tela.getSize().height/37.0);
+	    jogadorA.underSpace = 20;
 	    while(true){
 		    try{
 		    	new Pular().start();
