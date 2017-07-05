@@ -36,6 +36,7 @@ class Client extends JFrame {
 	Jogador jogadorA = new Jogador(1);
 	//Jogador jogadorB = new Jogador();
 	Desenho tela = new Desenho();
+	boolean pulando = false;
 
 	class Desenho extends JPanel{
 
@@ -90,20 +91,23 @@ class Client extends JFrame {
 		int y = jogadorA.underSpace;
 		final int MAX = jogadorA.img[jogadorA.STANDING].getHeight(tela);
 		public void run(){
+			pulando = true;
+			jogadorA.estado = jogadorA.STANDING;
 			while(jogadorA.underSpace < MAX){
 				jogadorA.underSpace++;
 				repaint();
 				try{
-					sleep(2);
+					sleep(1);
 				} catch (InterruptedException e) {};
 			}
 			while(jogadorA.underSpace > y){
 				jogadorA.underSpace--;
 				repaint();
 				try{
-					sleep(2);
+					sleep(1);
 				} catch (InterruptedException e) {};
 			}
+			pulando = false;
 		}
 	}
 
@@ -113,7 +117,10 @@ class Client extends JFrame {
 			public void keyPressed(KeyEvent e) {
 				switch (e.getKeyCode()) {
 					case KeyEvent.VK_DOWN:
-						new Abaixar().start();
+						if(!pulando) new Abaixar().start();
+						break;
+					case KeyEvent.VK_UP:
+						if(!pulando) new Pular().start();
 						break;
 				}
 			}
@@ -130,12 +137,6 @@ class Client extends JFrame {
 	    pack();
 	    setVisible(true);
 	    jogadorA.underSpace = 20;
-	    while(true){
-		    try{
-		    	new Pular().start();
-				Thread.sleep(1500);
-			} catch (InterruptedException e) {};
-		}
   	}
 
 	public static void main(String[] args) {
