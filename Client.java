@@ -94,7 +94,7 @@ class Client extends JFrame implements Runnable{
 		}
 	}
 
-	public class Pular extends Thread{
+	class Pular extends Thread{
 		int y = jogadorA.underSpace;
 		final int MAX = jogadorA.img[jogadorA.STANDING].getHeight(tela);
 		public void run(){
