@@ -4,6 +4,8 @@ import java.awt.image.*;
 import javax.swing.*;
 import java.io.*;
 import javax.imageio.*;
+import java.net.*;
+import java.util.*;
 
 class Jogador {
 	final int STANDING    = 0;
@@ -30,13 +32,18 @@ class Jogador {
 }
 
 
-class Client extends JFrame {
+class Client extends JFrame implements Runnable{
 
 	Image fundo = null;
 	Jogador jogadorA = new Jogador(1);
 	//Jogador jogadorB = new Jogador();
 	Desenho tela = new Desenho();
 	boolean pulando = false;
+	static Scanner is = null;
+	static PrintStream os = null;
+    static Thread t;
+    String inputLine, outputLine;
+    static boolean gameOn = true;
 
 	class Desenho extends JPanel{
 
@@ -117,10 +124,20 @@ class Client extends JFrame {
 			public void keyPressed(KeyEvent e) {
 				switch (e.getKeyCode()) {
 					case KeyEvent.VK_DOWN:
-						if(!pulando) new Abaixar().start();
+						if(!pulando){
+							outputLine = "Abaixar";
+							os.println(outputLine);
+							inputLine = is.nextLine(); 
+							if(inputLine.equals("Abaixou")) new Abaixar().start();
+						}
 						break;
 					case KeyEvent.VK_UP:
-						if(!pulando) new Pular().start();
+						if(!pulando){
+							outputLine = "Pular";
+							os.println(outputLine);
+							inputLine = is.nextLine();
+							if(inputLine.equals("Pulou")) new Pular().start();
+						}
 						break;
 				}
 			}
@@ -139,7 +156,39 @@ class Client extends JFrame {
 	    jogadorA.underSpace = 20;
   	}
 
+  	public void run() {
+        os.println(outputLine);
+    }
+
 	public static void main(String[] args) {
 		Client c = new Client();
+		Socket socket = null;
+        t = new Thread(c);
+
+        try {
+            socket = new Socket("127.0.0.1", 80);
+            os = new PrintStream(socket.getOutputStream(), true);
+            is = new Scanner(socket.getInputStream());
+        } catch (UnknownHostException e) {
+            System.err.println("Don't know about host.");
+        } catch (IOException e) {
+            System.err.println("Couldn't get I/O for the connection to host");
+        }
+
+
+        try{
+			while(gameOn) Thread.sleep(10000);
+		} catch (InterruptedException e) {};
+        
+
+        try {
+            os.close();
+            is.close();
+            socket.close();
+        } catch (UnknownHostException e) {
+            System.err.println("Trying to connect to unknown host: " + e);
+        } catch (IOException e) {
+            System.err.println("IOException:  " + e);
+        }
 	}
 }
