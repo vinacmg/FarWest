@@ -13,8 +13,11 @@ class Jogador {
 	Image bala = null;
 	int vidas = 5;
 	int estado = STANDING;
-	int xposicao = 972;
-	int yposicao = 548;
+	int xposicao;
+	int yposicao;
+	int xinicial;
+	int yinicial;
+	boolean atirando = false;
 	
 	
 	Jogador(int numero) {
@@ -33,7 +36,7 @@ class Client extends JFrame {
 
 	Image fundo = null;
 	Jogador jogadorA = new Jogador(1);
-	//Jogador jogadorB = new Jogador();
+	Jogador jogadorB = new Jogador(1);
 
 	class Desenho extends JPanel{
 
@@ -49,13 +52,33 @@ class Client extends JFrame {
 		public void paintComponent(Graphics g) {
 	    	super.paintComponent(g);
 	    	g.drawImage(fundo, 0, 0, getSize().width, getSize().height, this);
-	    	g.drawImage(jogadorA.bala, jogadorA.xposicao, jogadorA.yposicao, 10, 4, this);
 			g.drawImage(jogadorA.img[jogadorA.estado], getSize().width - jogadorA.img[jogadorA.estado].getWidth(this) - 10, getSize().height - jogadorA.img[jogadorA.estado].getHeight(this) - 20, jogadorA.img[jogadorA.estado].getWidth(this), jogadorA.img[jogadorA.estado].getHeight(this), this);
-    	}
+			g.drawImage(jogadorB.img[jogadorB.estado], jogadorB.img[jogadorB.estado].getWidth(this), getSize().height - jogadorB.img[jogadorB.estado].getHeight(this) - 20, -jogadorB.img[jogadorB.estado].getWidth(this), jogadorB.img[jogadorB.estado].getHeight(this), this);
+			calcula_posicao();
+			g.drawImage(jogadorA.bala, jogadorA.xposicao, jogadorA.yposicao, 10, 4, this);
+		}
 		
 		public Dimension getPreferredSize() {
       		return new Dimension(1200, 700);
     	}
+	}
+	
+	public void calcula_posicao() {
+		if(!jogadorA.atirando) {
+			if(jogadorA.estado == jogadorA.CROUCHING) {
+				jogadorA.yposicao = getSize().height - jogadorA.img[jogadorA.CROUCHING].getHeight(this) + 167;
+				jogadorA.xposicao = getSize().width - jogadorA.img[jogadorA.CROUCHING].getWidth(this) + 20;
+				jogadorA.xinicial = jogadorA.xposicao;
+				jogadorA.yinicial = jogadorA.yposicao;
+			}
+		
+			if(jogadorA.estado == jogadorA.STANDING) {
+				jogadorA.xposicao = getSize().width - jogadorA.img[jogadorA.STANDING].getWidth(this)/2 - 86;
+				jogadorA.yposicao = getSize().height - jogadorA.img[jogadorA.STANDING].getHeight(this) + 75;
+				jogadorA.xinicial = jogadorA.xposicao;
+				jogadorA.yinicial = jogadorA.yposicao;
+			}
+		}
 	}
 	
 	class Abaixar extends Thread {
@@ -67,12 +90,26 @@ class Client extends JFrame {
 	
 	class Atirar extends Thread {
 		public void run() {
+			try {
+				if(!jogadorA.atirando) {
+					jogadorA.atirando = true;
+					while(jogadorA.xposicao > -10) {
+						jogadorA.xposicao = jogadorA.xposicao - 20;
+						sleep(10);
+						repaint();
+					}
+					jogadorA.atirando = false;
+					jogadorA.xposicao = jogadorA.xinicial;
+				}
+			}
+			catch (InterruptedException e) {}
 		}
 	}
 	
 	class Iniciar extends Thread {
 		public void run() {
 			jogadorA.estado = jogadorA.STANDING;
+			calcula_posicao();
 			repaint();
 		}
 	}
@@ -85,6 +122,10 @@ class Client extends JFrame {
 				switch (e.getKeyCode()) {
 					case KeyEvent.VK_DOWN:
 						new Abaixar().start();
+						break;
+					case KeyEvent.VK_SPACE:
+						calcula_posicao();
+						new Atirar().start();
 						break;
 				}
 			}
