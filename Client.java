@@ -148,22 +148,14 @@ class Client extends JFrame implements Runnable{
 						if(!agindo){
 							outputLine = "Abaixar";
 							os.println(outputLine);
-							inputLine = is.nextLine();
-							if(inputLine.equals("Abaixou")){
-								agindo = true;
-								new Abaixar().start();
-							} 
+							os.flush();
 						}
 						break;
 					case KeyEvent.VK_UP:
 						if(!agindo){
 							outputLine = "Pular";
 							os.println(outputLine);
-							inputLine = is.nextLine();
-							if(inputLine.equals("Pulou")){
-								agindo = true;
-								new Pular().start();
-							}
+							os.flush();
 						}
 						break;
 				}
@@ -183,13 +175,25 @@ class Client extends JFrame implements Runnable{
   	}
 
   	public void run() {
-        os.println(outputLine);
+        do {
+            inputLine = is.nextLine();
+            switch (inputLine) {
+					case "Pulou":
+						agindo = true;
+						new Pular().start();
+						break;
+					case "Abaixou":
+						agindo = true;
+						new Abaixar().start();
+						break;
+				}
+        } while (!inputLine.equals(""));
     }
 
 	public static void main(String[] args) {
 		Client c = new Client();
 		Socket socket = null;
-        t = new Thread(c);
+		Thread t = new Thread(c);
 
         try {
             socket = new Socket("127.0.0.1", 80);
@@ -201,6 +205,7 @@ class Client extends JFrame implements Runnable{
             System.err.println("Couldn't get I/O for the connection to host");
         }
 
+        t.start();
 
         try{
 			while(gameOn) Thread.sleep(10000);
