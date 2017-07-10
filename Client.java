@@ -45,7 +45,7 @@ class Client extends JFrame implements Runnable{
     String inputLine, outputLine;
     static boolean gameOn = true;
     boolean keyPressed = false;
-    int lives = 5, xLife;
+    int vidas = 5, xLife;
 
 	class Desenho extends JPanel{
 
@@ -66,7 +66,7 @@ class Client extends JFrame implements Runnable{
 	    	g.drawImage(fundo, 0, 0, getSize().width, getSize().height, this);
 
 	    	xLife = 1140;
-	    	for(int i=0; i<lives; i++){
+	    	for(int i=0; i<vidas; i++){
 	    		g.drawImage(life, xLife, 10, life.getWidth(this), life.getHeight(this), this);
 	    		xLife -= 50;
 	    	}
@@ -175,6 +175,7 @@ class Client extends JFrame implements Runnable{
 			}
 		});
 	    setDefaultCloseOperation(EXIT_ON_CLOSE);
+	    setResizable(false);
 	    add(tela);
 	    pack();
 	    setVisible(true);

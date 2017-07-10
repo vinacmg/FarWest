@@ -13,17 +13,21 @@ class Server {
             System.exit(1);
         }
 
-        Socket clientSocket = null;
-        try {
-            clientSocket = serverSocket.accept();
-        } catch (IOException e) {
-        System.out.println("Accept failed: " + 80 + ", " + e);
-        System.exit(1);
-        }
+        Socket[] clientSocket = new Socket[2];
 
-        System.out.println("Accept Funcionou!");
+        for(int i=0;i<2;i++){	
+	        try {
+	            clientSocket[i] = serverSocket.accept();
+	        } catch (IOException e) {
+	        System.out.println("Accept failed: " + 80 + ", " + e);
+	        System.exit(1);
+	        }
 
-        new Servindo(clientSocket).start();
+	        System.out.println("Accept "+ (i+1) +" Funcionou!");
+    		
+    		new Servindo(clientSocket).start();
+    	}
+        
 
 
         try {
@@ -36,11 +40,14 @@ class Server {
 
 class Servindo extends Thread {
     Socket clientSocket;
-    static PrintStream os;
-    JogadorCliente jogador = new JogadorCliente();
+    PrintStream os;
+    Jogador1 jogador = new Jogador1();
+    static int cont = 0;
 
-    Servindo(Socket clientSocket) {
-        this.clientSocket = clientSocket;
+    Servindo(Socket[] clientSocket) {
+    	final int ATUAL = cont;
+    	cont++;
+        this.clientSocket = clientSocket[ATUAL];
     }
 
     public void run() {
@@ -53,14 +60,17 @@ class Servindo extends Thread {
             inputLine = is.nextLine();
             switch (inputLine) {
 					case "Pular":
-						//verificar aqui se já não ta pulando ou no cliente?
 						os.println("Pulou");
-						new Pulou().start();
+						jogador.pulou();
             			os.flush();
 						break;
 					case "Abaixar":
 						os.println("Abaixou");
             			os.flush();
+						jogador.estado = jogador.CROUCHING;
+						break;
+					case "Levantou":
+						jogador.estado = jogador.STANDING;
 						break;
 					case "Estado":
 					    inputLine = is.nextLine();
@@ -78,38 +88,12 @@ class Servindo extends Thread {
         System.out.println("Conexacao terminada pelo cliente");
         }
     }
-
-    class Abaixou extends Thread {
-		public void run() {
-			jogadorA.estado = jogadorA.CROUCHING;
-		}
-	}
-    
-    class Pulou extends Thread{
-		int y = jogador.underSpace;
-		final int MAX = jogador.DELTA;
-		public void run(){
-			jogador.estado = jogador.STANDING;
-			while(jogador.underSpace < MAX){
-				jogador.underSpace++;
-				try{
-					sleep(1);
-				} catch (InterruptedException e) {};
-			}
-			while(jogador.underSpace > y){
-				jogador.underSpace--;
-				try{
-					sleep(1);
-				} catch (InterruptedException e) {};
-			}
-		}
-	}
 	
 }
 
 
 
-class JogadorCliente {
+class Jogador1 {
 	
 	final int STANDING    = 0;
 	final int CROUCHING   = 1;
@@ -118,10 +102,38 @@ class JogadorCliente {
 	int xposicao = 972;
 	int yposicao = 548;
 	int underSpace = 20;
-	final int DELTA = 262;
+	int delta = 262;
 	
 	
-	JogadorCliente() {
+	Jogador1() {
 	}
+
+	void pulou(){
+		new Pulou().start();
+	}
+    
+    class Pulou extends Thread{
+		int y = underSpace;
+		final int MAX = delta;
+		public void run(){
+			estado = STANDING;
+			while(underSpace < MAX){
+				underSpace++;
+				try{
+					sleep(1);
+				} catch (InterruptedException e) {};
+			}
+			while(underSpace > y){
+				underSpace--;
+				try{
+					sleep(1);
+				} catch (InterruptedException e) {};
+			}
+		}
+	}
+}
+
+class Jogador2 extends Jogador1{
+
 }
 
