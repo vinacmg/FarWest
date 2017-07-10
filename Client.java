@@ -34,16 +34,18 @@ class Jogador {
 
 class Client extends JFrame implements Runnable{
 
-	Image fundo = null;
+	Image fundo = null, life = null;
 	Jogador jogadorA = new Jogador(1);
 	//Jogador jogadorB = new Jogador();
 	Desenho tela = new Desenho();
-	boolean pulando = false;
+	boolean agindo = false;
 	static Scanner is = null;
 	static PrintStream os = null;
     static Thread t;
     String inputLine, outputLine;
     static boolean gameOn = true;
+    boolean keyPressed = false;
+    int lives = 5, xLife;
 
 	class Desenho extends JPanel{
 
@@ -51,6 +53,7 @@ class Client extends JFrame implements Runnable{
 		Desenho(){
 			try {
 				fundo = ImageIO.read(new File("background.png"));
+				life = ImageIO.read(new File("life.png"));
 	      	} catch (IOException e) {
 		        JOptionPane.showMessageDialog(this, "A imagem não pode ser carregada!\n" + e, "Erro", JOptionPane.ERROR_MESSAGE);
 		        System.exit(1);
@@ -61,6 +64,13 @@ class Client extends JFrame implements Runnable{
 	    	super.paintComponent(g);
 
 	    	g.drawImage(fundo, 0, 0, getSize().width, getSize().height, this);
+
+	    	xLife = 1140;
+	    	for(int i=0; i<lives; i++){
+	    		g.drawImage(life, xLife, 10, life.getWidth(this), life.getHeight(this), this);
+	    		xLife -= 50;
+	    	}
+
 	    	g.drawImage(jogadorA.bala, jogadorA.xposicao, jogadorA.yposicao, 15, 8, this);
 			g.drawImage(jogadorA.img[jogadorA.estado], getSize().width - jogadorA.img[jogadorA.estado].getWidth(this) - 10,
 		 		getSize().height - jogadorA.img[jogadorA.estado].getHeight(this) - jogadorA.underSpace, 
@@ -77,8 +87,17 @@ class Client extends JFrame implements Runnable{
 	
 	class Abaixar extends Thread {
 		public void run() {
+
 			jogadorA.estado = jogadorA.CROUCHING;
 			repaint();
+			try{
+				sleep(1000);
+			} catch (InterruptedException e) {};
+			agindo = false;
+			jogadorA.estado = jogadorA.STANDING;
+			repaint();
+			outputLine = "Levantou";
+		    os.println(outputLine);
 		}
 	}
 	
@@ -98,11 +117,11 @@ class Client extends JFrame implements Runnable{
 		int y = jogadorA.underSpace;
 		final int MAX = jogadorA.img[jogadorA.STANDING].getHeight(tela);
 		public void run(){
-			pulando = true;
 			jogadorA.estado = jogadorA.STANDING;
 			while(jogadorA.underSpace < MAX){
 				jogadorA.underSpace++;
 				repaint();
+				Toolkit.getDefaultToolkit().sync();
 				try{
 					sleep(1);
 				} catch (InterruptedException e) {};
@@ -110,11 +129,12 @@ class Client extends JFrame implements Runnable{
 			while(jogadorA.underSpace > y){
 				jogadorA.underSpace--;
 				repaint();
+				Toolkit.getDefaultToolkit().sync();
 				try{
 					sleep(1);
 				} catch (InterruptedException e) {};
 			}
-			pulando = false;
+			agindo = false;
 		}
 	}
 
@@ -122,30 +142,35 @@ class Client extends JFrame implements Runnable{
 	    super("FarWest");
 		addKeyListener(new KeyAdapter() {
 			public void keyPressed(KeyEvent e) {
+				keyPressed = true;
 				switch (e.getKeyCode()) {
 					case KeyEvent.VK_DOWN:
-						if(!pulando){
+						if(!agindo){
 							outputLine = "Abaixar";
 							os.println(outputLine);
-							inputLine = is.nextLine(); 
-							if(inputLine.equals("Abaixou")) new Abaixar().start();
+							inputLine = is.nextLine();
+							if(inputLine.equals("Abaixou")){
+								agindo = true;
+								new Abaixar().start();
+							} 
 						}
 						break;
 					case KeyEvent.VK_UP:
-						if(!pulando){
+						if(!agindo){
 							outputLine = "Pular";
 							os.println(outputLine);
 							inputLine = is.nextLine();
-							if(inputLine.equals("Pulou")) new Pular().start();
+							if(inputLine.equals("Pulou")){
+								agindo = true;
+								new Pular().start();
+							}
 						}
 						break;
 				}
 			}
 			public void keyReleased(KeyEvent e) {
+				keyPressed = false;
 				switch (e.getKeyCode()) {
-					case KeyEvent.VK_DOWN:
-						new Iniciar().start();
-						break;
 				}
 			}
 		});
