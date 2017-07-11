@@ -4,8 +4,8 @@ import java.awt.image.*;
 import javax.swing.*;
 import java.io.*;
 import javax.imageio.*;
-import java.net.*;
 import java.util.*;
+import java.net.*;
 
 class Jogador {
 	final int STANDING    = 0;
@@ -15,7 +15,7 @@ class Jogador {
 	Image bala = null;
 	int vidas = 5;
 	int estado = STANDING;
-	int underSpace;
+	int underSpace = 20;
 	int xposicao;
 	int yposicao;
 	int xinicial;
@@ -52,7 +52,6 @@ class Client extends JFrame implements Runnable{
 
 	class Desenho extends JPanel{
 
-
 		Desenho(){
 			try {
 				fundo = ImageIO.read(new File("background.png"));
@@ -65,7 +64,6 @@ class Client extends JFrame implements Runnable{
 		
 		public void paintComponent(Graphics g) {
 	    	super.paintComponent(g);
-
 	    	g.drawImage(fundo, 0, 0, getSize().width, getSize().height, this);
 
 	    	xLife = 1140;
@@ -84,13 +82,11 @@ class Client extends JFrame implements Runnable{
 				jogadorB.img[jogadorB.estado].getHeight(this), this);
 			calcula_posicao();
 			g.drawImage(jogadorA.bala, jogadorA.xposicao, jogadorA.yposicao, 10, 4, this);
-			
 		}
 		
 		public Dimension getPreferredSize() {
-      		return new Dimension(1200, 699);
+      		return new Dimension(1200, 700);
     	}
-
 	}
 	
 	public void calcula_posicao() {
@@ -113,17 +109,8 @@ class Client extends JFrame implements Runnable{
 	
 	class Abaixar extends Thread {
 		public void run() {
-
 			jogadorA.estado = jogadorA.CROUCHING;
 			repaint();
-			try{
-				sleep(1000);
-			} catch (InterruptedException e) {};
-			agindo = false;
-			jogadorA.estado = jogadorA.STANDING;
-			repaint();
-			outputLine = "Levantou";
-		    os.println(outputLine);
 		}
 	}
 	
@@ -133,8 +120,8 @@ class Client extends JFrame implements Runnable{
 				if(!jogadorA.atirando) {
 					jogadorA.atirando = true;
 					while(jogadorA.xposicao > -10) {
-						jogadorA.xposicao = jogadorA.xposicao - 10;
-						sleep(5);
+						jogadorA.xposicao = jogadorA.xposicao - 20;
+						sleep(10);
 						repaint();
 					}
 					jogadorA.atirando = false;
@@ -153,6 +140,7 @@ class Client extends JFrame implements Runnable{
 		}
 	}
 
+	
 	class Pular extends Thread{
 		int y = jogadorA.underSpace;
 		final int MAX = jogadorA.img[jogadorA.STANDING].getHeight(tela);
@@ -182,7 +170,6 @@ class Client extends JFrame implements Runnable{
 	    super("FarWest");
 		addKeyListener(new KeyAdapter() {
 			public void keyPressed(KeyEvent e) {
-				keyPressed = true;
 				switch (e.getKeyCode()) {
 					case KeyEvent.VK_DOWN:
 						if(!agindo){
@@ -207,17 +194,17 @@ class Client extends JFrame implements Runnable{
 				}
 			}
 			public void keyReleased(KeyEvent e) {
-				keyPressed = false;
 				switch (e.getKeyCode()) {
+					case KeyEvent.VK_DOWN:
+						new Iniciar().start();
+						break;
 				}
 			}
 		});
 	    setDefaultCloseOperation(EXIT_ON_CLOSE);
-	    setResizable(false);
-	    add(tela);
+	    add(new Desenho());
 	    pack();
 	    setVisible(true);
-	    jogadorA.underSpace = 20;
   	}
 
   	public void run() {
