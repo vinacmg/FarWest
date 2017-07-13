@@ -25,10 +25,11 @@ class Server {
 
 	        System.out.println("Accept "+ (i+1) +" Funcionou!");
     		
+    		new Servindo(clientSocket).start();
+
     	}
         
-    	new Servindo(clientSocket).start();
-
+   		//colocar servindo ora do for depois de pronto
 
         try {
             serverSocket.close();
@@ -39,65 +40,68 @@ class Server {
 }
 
 class Servindo extends Thread {
-    Socket clientSocket;
-    Socket oponentSocket;
-    PrintStream os, osOponent;
+    Socket clientSocket;    
+    static PrintStream[] os = new PrintStream[2];
     JogadorCliente jogador;
     static int cont = 0;
+    final int ESSE, OPONENTE;
 
     Servindo(Socket[] clientSocket) {
     	this.clientSocket = clientSocket[cont];
     	if(cont == 0){
     		jogador = new JogadorCliente1();
-    		//oponentSocket = clientSocket[1];
+			ESSE = 0;
+    		OPONENTE = 1;
     	}
     	else{
     		jogador = new JogadorCliente2();
-    		//oponentSocket = clientSocket[0];
+			ESSE = 1;
+    		OPONENTE = 0;
     	}
+		
     	cont++;
     }
 
     public void run() {
         try {
         Scanner is = new Scanner(clientSocket.getInputStream());
-        //osOponent = new PrintStream(oponentSocket.getOutputStream());
-        os = new PrintStream(clientSocket.getOutputStream());
-        String inputLine, outputLine;
+        os[ESSE] = new PrintStream(clientSocket.getOutputStream());
+        String inputLine, outputLine, oponentLine;
 
         do {
             inputLine = is.nextLine();
             switch (inputLine) {
 					case "Pular":
-						os.println("Pulou");
-            			os.flush();
-            			//new Oponente(inputLine).start();
+						os[ESSE].println("Pulou");
+            			os[ESSE].flush();
+            			new Oponente(inputLine).start();
 						jogador.pulou();
 						break;
 					case "Abaixar":
-						os.println("Abaixou");
-            			os.flush();
-            			//new Oponente(inputLine).start();
+						os[ESSE].println("Abaixou");
+            			os[ESSE].flush();
+            			new Oponente(inputLine).start();
 						jogador.estado = jogador.CROUCHING;
 						break;
-					case "Levantou":
+					case "Levantar":
+						os[ESSE].println("Levantou");
+            			os[ESSE].flush();
+            			new Oponente(inputLine).start();
 						jogador.estado = jogador.STANDING;
 						break;
 					case "Estado":
 					    inputLine = is.nextLine();
 					case "Atirar":
-						os.println("Atirou"); //colocar rotina atirar
-            			os.flush();
-            			//new Oponente(inputLine).start();
+						os[ESSE].println("Atirou"); //colocar rotina atirar
+            			os[ESSE].flush();
+            			new Oponente(inputLine).start();
             			break;
 				}
         } while (!inputLine.equals(""));
 
-        os.close();
+        os[ESSE].close();
         is.close();
-        //osOponent.close();
         clientSocket.close();
-        //oponentSocket.close();
 
         } catch (IOException e) {
         e.printStackTrace();
@@ -106,7 +110,7 @@ class Servindo extends Thread {
         }
     }
 	
-	/*
+	
 	class Oponente extends Thread{
 		String inputLine;
 
@@ -117,25 +121,25 @@ class Servindo extends Thread {
 		public void run(){
         	switch (inputLine) {
 				case "Pular":
-					osOponent.println("OponentePulou");
-        			osOponent.flush();
+					os[OPONENTE].println("OponentePulou");
+        			os[OPONENTE].flush();
 					break;
 				case "Abaixar":
-					osOponent.println("OponenteAbaixou");
-        			osOponent.flush();
+					os[OPONENTE].println("OponenteAbaixou");
+        			os[OPONENTE].flush();
 					break;
 				case "Levantou":
-					osOponent.println("OponenteLevantou");
-        			osOponent.flush();
+					os[OPONENTE].println("OponenteLevantou");
+        			os[OPONENTE].flush();
 					break;
 				case "Estado":
 				case "Atirar":
-					osOponent.println("OponenteAtirou");
-        			osOponent.flush();
+					os[OPONENTE].println("OponenteAtirou");
+        			os[OPONENTE].flush();
         			break;
 			}
 		}
-	}*/
+	}
 }
 
 

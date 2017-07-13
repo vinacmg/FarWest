@@ -7,35 +7,100 @@ import javax.imageio.*;
 import java.util.*;
 import java.net.*;
 
-class Jogador {
-	final int STANDING    = 0;
-	final int CROUCHING   = 1;
-	final int SHOOTING    = 2;
-	Image img[] = null;
-	Image bala = null;
-	int vidas = 5;
-	int estado = STANDING;
-	int underSpace = 20;
-	int xposicao;
-	int yposicao;
-	int xinicial;
-	int yinicial;
-	boolean atirando = false;
-	
-	
-	Jogador(int numero) {
-		img = new Image[3];
-		try {
-			bala = ImageIO.read(new File("bala.png"));
-			img[STANDING] = ImageIO.read(new File("standing" + numero + ".png"));
-			img[CROUCHING] = ImageIO.read(new File("agachado" + numero + ".png"));
-		}
-		catch (IOException e) {}
-	}
-}
-
-
 class Client extends JFrame implements Runnable{
+
+	class Jogador {
+		final int STANDING    = 0;
+		final int CROUCHING   = 1;
+		final int SHOOTING    = 2;
+		Image img[] = null;
+		Image bala = null;
+		int vidas = 5;
+		int estado = STANDING;
+		int underSpace = 20;
+		int xposicao;
+		int yposicao;
+		int xinicial;
+		int yinicial;
+		boolean atirando = false;
+		
+		
+		Jogador(int numero) {
+			img = new Image[3];
+			try {
+				bala = ImageIO.read(new File("bala.png"));
+				img[STANDING] = ImageIO.read(new File("standing" + numero + ".png"));
+				img[CROUCHING] = ImageIO.read(new File("agachado" + numero + ".png"));
+			}
+			catch (IOException e) {}
+		}
+
+
+		void abaixar(){ new Abaixar().start();}
+		void atirar(){ new Atirar().start();}
+		void iniciar(){ new Iniciar().start();}
+		void pular(){ new Pular().start();}
+
+		class Abaixar extends Thread {
+			public void run() {
+				estado = jogadorA.CROUCHING;
+				repaint();
+			}
+		}
+		
+		class Atirar extends Thread {
+			public void run() {
+				try {
+					if(!atirando) {
+						atirando = true;
+						while(xposicao > -10) {
+							xposicao = xposicao - 20;
+							sleep(10);
+							repaint();
+						}
+						atirando = false;
+						xposicao = xinicial;
+					}
+				}
+				catch (InterruptedException e) {}
+			}
+		}
+		
+		class Iniciar extends Thread {
+			public void run() {
+				estado = jogadorA.STANDING;
+				calcula_posicao();
+				repaint();
+			}
+		}
+
+		
+		class Pular extends Thread{
+			int y = underSpace;
+			final int MAX = img[STANDING].getHeight(tela);
+			public void run(){
+				estado = STANDING;
+				while(underSpace < MAX){
+					underSpace++;
+					repaint();
+					Toolkit.getDefaultToolkit().sync();
+					try{
+						sleep(1);
+					} catch (InterruptedException e) {};
+				}
+				while(underSpace > y){
+					underSpace--;
+					repaint();
+					Toolkit.getDefaultToolkit().sync();
+					try{
+						sleep(1);
+					} catch (InterruptedException e) {};
+				}
+				agindo = false;
+			}
+		}
+	}
+
 
 	Image fundo = null, life = null;
 	Jogador jogadorA = new Jogador(1);
@@ -107,64 +172,6 @@ class Client extends JFrame implements Runnable{
 		}
 	}
 	
-	class Abaixar extends Thread {
-		public void run() {
-			jogadorA.estado = jogadorA.CROUCHING;
-			repaint();
-		}
-	}
-	
-	class Atirar extends Thread {
-		public void run() {
-			try {
-				if(!jogadorA.atirando) {
-					jogadorA.atirando = true;
-					while(jogadorA.xposicao > -10) {
-						jogadorA.xposicao = jogadorA.xposicao - 20;
-						sleep(10);
-						repaint();
-					}
-					jogadorA.atirando = false;
-					jogadorA.xposicao = jogadorA.xinicial;
-				}
-			}
-			catch (InterruptedException e) {}
-		}
-	}
-	
-	class Iniciar extends Thread {
-		public void run() {
-			jogadorA.estado = jogadorA.STANDING;
-			calcula_posicao();
-			repaint();
-		}
-	}
-
-	
-	class Pular extends Thread{
-		int y = jogadorA.underSpace;
-		final int MAX = jogadorA.img[jogadorA.STANDING].getHeight(tela);
-		public void run(){
-			jogadorA.estado = jogadorA.STANDING;
-			while(jogadorA.underSpace < MAX){
-				jogadorA.underSpace++;
-				repaint();
-				Toolkit.getDefaultToolkit().sync();
-				try{
-					sleep(1);
-				} catch (InterruptedException e) {};
-			}
-			while(jogadorA.underSpace > y){
-				jogadorA.underSpace--;
-				repaint();
-				Toolkit.getDefaultToolkit().sync();
-				try{
-					sleep(1);
-				} catch (InterruptedException e) {};
-			}
-			agindo = false;
-		}
-	}
 
 	Client() {
 	    super("FarWest");
@@ -196,7 +203,9 @@ class Client extends JFrame implements Runnable{
 			public void keyReleased(KeyEvent e) {
 				switch (e.getKeyCode()) {
 					case KeyEvent.VK_DOWN:
-						new Iniciar().start();
+						outputLine = "Levantar";
+						os.println(outputLine);
+						os.flush();
 						break;
 				}
 			}
@@ -213,15 +222,27 @@ class Client extends JFrame implements Runnable{
             switch (inputLine) {
 					case "Pulou":
 						agindo = true;
-						new Pular().start();
+						jogadorA.pular();
 						break;
 					case "Abaixou":
 						agindo = true;
-						new Abaixar().start();
+						jogadorA.abaixar();
 						break;
 					case "Atirou":
-						new Atirar().start();
+						jogadorA.atirar();
 						break;
+					case "Levantou":
+						agindo = false;
+						jogadorA.iniciar();
+						break;
+					case "OponentePulou":
+						break;
+					case "OponenteAbaixou":
+						break;
+					case "OponenteLevantou":
+						break;
+					case "OponenteAtirou":
+	        			break;
 				}
         } while (!inputLine.equals(""));
     }
