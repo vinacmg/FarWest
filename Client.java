@@ -142,7 +142,7 @@ class Client extends JFrame implements Runnable{
 		 		jogadorA.img[jogadorA.estado].getWidth(this),
 		 		jogadorA.img[jogadorA.estado].getHeight(this), this);
 			g.drawImage(jogadorB.img[jogadorB.estado], jogadorB.img[jogadorB.estado].getWidth(this), 
-				getSize().height - jogadorB.img[jogadorB.estado].getHeight(this) - 20, 
+				getSize().height - jogadorB.img[jogadorB.estado].getHeight(this) - jogadorB.underSpace, 
 				-jogadorB.img[jogadorB.estado].getWidth(this), 
 				jogadorB.img[jogadorB.estado].getHeight(this), this);
 			calcula_posicao();
@@ -236,13 +236,17 @@ class Client extends JFrame implements Runnable{
 						jogadorA.iniciar();
 						break;
 					case "OponentePulou":
+						jogadorB.pular();
 						break;
 					case "OponenteAbaixou":
-						break;
-					case "OponenteLevantou":
+						jogadorB.abaixar();
 						break;
 					case "OponenteAtirou":
+						jogadorB.atirar();
 	        			break;
+					case "OponenteLevantou":
+						jogadorB.iniciar();
+						break;
 				}
         } while (!inputLine.equals(""));
     }
