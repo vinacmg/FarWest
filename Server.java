@@ -74,19 +74,22 @@ class Servindo extends Thread {
 					case "Pular":
 						os[ESSE].println("Pulou");
             			os[ESSE].flush();
-            			new Oponente(inputLine).start();
+            			os[OPONENTE].println("OponentePulou");
+        				os[OPONENTE].flush();
 						jogador.pulou();
 						break;
 					case "Abaixar":
 						os[ESSE].println("Abaixou");
             			os[ESSE].flush();
-            			new Oponente(inputLine).start();
+            			os[OPONENTE].println("OponenteAbaixou");
+        				os[OPONENTE].flush();
 						jogador.estado = jogador.CROUCHING;
 						break;
 					case "Levantar":
 						os[ESSE].println("Levantou");
             			os[ESSE].flush();
-            			new Oponente(inputLine).start();
+            			os[OPONENTE].println("OponenteLevantou");
+        				os[OPONENTE].flush();
 						jogador.estado = jogador.STANDING;
 						break;
 					case "Estado":
@@ -94,7 +97,8 @@ class Servindo extends Thread {
 					case "Atirar":
 						os[ESSE].println("Atirou"); //colocar rotina atirar
             			os[ESSE].flush();
-            			new Oponente(inputLine).start();
+            			os[OPONENTE].println("OponenteAtirou");
+        				os[OPONENTE].flush();
             			break;
 				}
         } while (!inputLine.equals(""));
@@ -110,7 +114,7 @@ class Servindo extends Thread {
         }
     }
 	
-	
+	/*
 	class Oponente extends Thread{
 		String inputLine;
 
@@ -139,7 +143,7 @@ class Servindo extends Thread {
         			break;
 			}
 		}
-	}
+	}*/
 }
 
 
