@@ -67,8 +67,9 @@ class Client extends JFrame implements Runnable{
 			public void run() {
 				int valor = municao;
 				try {
-					if(valor > 4) {
+					if(valor >= 4) {
 						municao = 0;
+						repaint();
 					}
 					else {
 						if(!bala[valor].atirando) {
@@ -112,19 +113,19 @@ class Client extends JFrame implements Runnable{
 			public void run(){
 				estado = STANDING;
 				while(underSpace < MAX){
-					underSpace++;
+					underSpace+= 14;
 					repaint();
 					Toolkit.getDefaultToolkit().sync();
 					try{
-						sleep(1);
+						sleep(30);
 					} catch (InterruptedException e) {};
 				}
 				while(underSpace > y){
-					underSpace--;
+					underSpace-= 14;
 					repaint();
 					Toolkit.getDefaultToolkit().sync();
 					try{
-						sleep(1);
+						sleep(30);
 					} catch (InterruptedException e) {};
 				}
 
@@ -135,8 +136,44 @@ class Client extends JFrame implements Runnable{
 
 	class JogadorB extends Jogador {
 
-		JogadorB(int numero){
+		JogadorB(int numero) {
 			super(numero);
+		}
+
+		void atirar(){ new AtirarB().start();}
+
+		class AtirarB extends Thread{
+			public void run() {
+				int valor = municao;
+				try {
+					if(valor >= 4) {
+						municao = 0;
+					}
+					else {
+						if(!bala[valor].atirando) {
+							bala[valor].atirando = true;
+							municao++;
+							while(bala[valor].xposicao < 1210) {
+								bala[valor].xposicao = bala[valor].xposicao + 10;
+								sleep(10);
+								repaint();
+								Toolkit.getDefaultToolkit().sync();
+								
+								int topo = getSize().height - jogadorA.img[jogadorA.estado].getHeight(tela) - jogadorA.underSpace;
+								int baixo = getSize().height - jogadorA.underSpace;
+								int lado = jogadorA.img[jogadorA.estado].getWidth(tela) - 180;
+								if((bala[valor].xposicao >= 1200 - lado)&&(bala[valor].yposicao >= topo)&&(bala[valor].yposicao <= baixo)) {
+									break;
+								}
+									
+								
+							}
+							bala[valor].atirando = false;
+						}
+					}
+				}
+				catch (InterruptedException e) {}
+			}
 		}
 
 		class Pular extends Thread{
@@ -145,19 +182,19 @@ class Client extends JFrame implements Runnable{
 			public void run(){
 				estado = STANDING;
 				while(underSpace < MAX){
-					underSpace++;
+					underSpace+= 14;
 					repaint();
 					Toolkit.getDefaultToolkit().sync();
 					try{
-						sleep(1);
+						sleep(30);
 					} catch (InterruptedException e) {};
 				}
 				while(underSpace > y){
-					underSpace--;
+					underSpace-= 14;
 					repaint();
 					Toolkit.getDefaultToolkit().sync();
 					try{
-						sleep(1);
+						sleep(30);
 					} catch (InterruptedException e) {};
 				}
 			
@@ -166,7 +203,7 @@ class Client extends JFrame implements Runnable{
 		}
 	}
 
-	Image fundo = null, life = null;
+	Image fundo = null, life = null, municao = null;
 	Jogador jogadorA = new Jogador(1);
 	JogadorB jogadorB = new JogadorB(1);
 	Desenho tela = new Desenho();
@@ -176,7 +213,7 @@ class Client extends JFrame implements Runnable{
     String inputLine, outputLine;
     static boolean gameOn = true;
     boolean keyPressed = false;
-    int vidas = 5, xLife;
+    int xLife;
 
 	class Desenho extends JPanel{
 
@@ -184,6 +221,7 @@ class Client extends JFrame implements Runnable{
 			try {
 				fundo = ImageIO.read(new File("background.png"));
 				life = ImageIO.read(new File("life.png"));
+				municao = ImageIO.read(new File("municao.png"));
 	      	} catch (IOException e) {
 		        JOptionPane.showMessageDialog(this, "A imagem não pode ser carregada!\n" + e, "Erro", JOptionPane.ERROR_MESSAGE);
 		        System.exit(1);
@@ -195,9 +233,21 @@ class Client extends JFrame implements Runnable{
 	    	g.drawImage(fundo, 0, 0, getSize().width, getSize().height, this);
 
 	    	xLife = 1140;
-	    	for(int i=0; i<vidas; i++){
+	    	for(int i=0; i<jogadorA.vidas; i++){
 	    		g.drawImage(life, xLife, 10, life.getWidth(this), life.getHeight(this), this);
 	    		xLife -= 50;
+	    	}
+
+	    	xLife = 10;
+	    	for(int i=0; i<jogadorB.vidas; i++){
+	    		g.drawImage(life, xLife, 10, life.getWidth(this), life.getHeight(this), this);
+	    		xLife += 50;
+	    	}
+
+	    	xLife = 1140;
+	    	for(int i=4; i>jogadorA.municao; i--){
+	    		g.drawImage(municao, xLife, 70, municao.getWidth(this), municao.getHeight(this), this);
+	    		xLife -= 20;
 	    	}
 
 			g.drawImage(jogadorA.img[jogadorA.estado], getSize().width - jogadorA.img[jogadorA.estado].getWidth(this) - 10,
@@ -209,11 +259,16 @@ class Client extends JFrame implements Runnable{
 				-jogadorB.img[jogadorB.estado].getWidth(this), 
 				jogadorB.img[jogadorB.estado].getHeight(this), this);
 			calcula_posicao();
+			//BALAS JOGADOR A
 			g.drawImage(jogadorA.bala[0].img, jogadorA.bala[0].xposicao, jogadorA.bala[0].yposicao, 10, 4, this);
 			g.drawImage(jogadorA.bala[1].img, jogadorA.bala[1].xposicao, jogadorA.bala[1].yposicao, 10, 4, this);
 			g.drawImage(jogadorA.bala[2].img, jogadorA.bala[2].xposicao, jogadorA.bala[2].yposicao, 10, 4, this);
 			g.drawImage(jogadorA.bala[3].img, jogadorA.bala[3].xposicao, jogadorA.bala[3].yposicao, 10, 4, this);
-			g.drawImage(jogadorA.bala[4].img, jogadorA.bala[4].xposicao, jogadorA.bala[4].yposicao, 10, 4, this);
+			//BALAS JOGADOR B
+			g.drawImage(jogadorB.bala[0].img, jogadorB.bala[0].xposicao, jogadorB.bala[0].yposicao, 10, 4, this);
+			g.drawImage(jogadorB.bala[1].img, jogadorB.bala[1].xposicao, jogadorB.bala[1].yposicao, 10, 4, this);
+			g.drawImage(jogadorB.bala[2].img, jogadorB.bala[2].xposicao, jogadorB.bala[2].yposicao, 10, 4, this);
+			g.drawImage(jogadorB.bala[3].img, jogadorB.bala[3].xposicao, jogadorB.bala[3].yposicao, 10, 4, this);
 		}
 		
 		public Dimension getPreferredSize() {
@@ -259,6 +314,40 @@ class Client extends JFrame implements Runnable{
 				}
 			}
 		//}
+			if(jogadorB.estado == jogadorB.CROUCHING) {
+				for(i = 0; i < 4; i++) {
+					if(!jogadorB.bala[i].atirando) {
+						jogadorB.bala[i].yposicao = getSize().height - jogadorB.img[jogadorB.CROUCHING].getHeight(this) + 167;
+						jogadorB.bala[i].xposicao = jogadorB.img[jogadorB.CROUCHING].getWidth(this) - 20;
+					}
+				}
+				jogadorB.xinicial = jogadorB.bala[i - 1].xposicao;
+				jogadorB.yinicial = jogadorB.bala[i - 1].yposicao;
+			}
+			else {
+				if(!jogadorB.agindo) {
+					if(jogadorB.estado == jogadorB.STANDING) {
+						for(i = 0; i < 4; i++) {
+							if(!jogadorB.bala[i].atirando) {
+								jogadorB.bala[i].xposicao = jogadorB.img[jogadorB.STANDING].getWidth(this)/2 + 86;
+								jogadorB.bala[i].yposicao = getSize().height - jogadorB.img[jogadorB.STANDING].getHeight(this) + 75;
+							}
+						}
+						jogadorB.xinicial = jogadorB.bala[i - 1].xposicao;
+						jogadorB.yinicial = jogadorB.bala[i - 1].yposicao;
+					}
+				}
+				else {
+					for(i = 0; i < 4; i++) {
+						if(!jogadorB.bala[i].atirando) {
+							jogadorB.bala[i].xposicao = jogadorB.img[jogadorB.STANDING].getWidth(this)/2 - 86;
+							jogadorB.bala[i].yposicao = getSize().height - jogadorB.img[jogadorB.estado].getHeight(this) - jogadorB.underSpace + 100;
+						}
+					}
+					jogadorB.xinicial = jogadorB.bala[i - 1].xposicao;
+					jogadorB.yinicial = jogadorB.bala[i - 1].yposicao;
+				}
+			}
 	}
 	
 
@@ -283,6 +372,7 @@ class Client extends JFrame implements Runnable{
 						break;
 					case KeyEvent.VK_SPACE:
 						//calcula_posicao();
+						jogadorB.atirar();
 						outputLine = "Atirar";
 						os.println(outputLine);
 						os.flush();
@@ -334,12 +424,14 @@ class Client extends JFrame implements Runnable{
 						jogadorB.pular();
 						break;
 					case "OponenteAbaixou":
+						jogadorB.agindo = true;
 						jogadorB.abaixar();
 						break;
 					case "OponenteAtirou":
 						jogadorB.atirar();
 	        			break;
 					case "OponenteLevantou":
+						jogadorB.agindo = false;
 						jogadorB.iniciar();
 						break;
 				}
