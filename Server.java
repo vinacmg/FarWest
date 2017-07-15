@@ -66,23 +66,21 @@ class Servindo extends Thread {
         try {
         Scanner is = new Scanner(clientSocket.getInputStream());
         os[ESSE] = new PrintStream(clientSocket.getOutputStream());
-        String inputLine, outputLine, oponentLine;
+        String inputLine, outputLine;
 
         do {
             inputLine = is.nextLine();
             switch (inputLine) {
 					case "Pular":
-						os[ESSE].println("Pulou");
-            			os[ESSE].flush();
-            			os[OPONENTE].println("OponentePulou");
+						os[OPONENTE].println("PossoPular?");  //verifica com o oponente se pode pular (por conta da animação)
         				os[OPONENTE].flush();
-						jogador.pulou();
 						break;
 					case "Abaixar":
+						os[OPONENTE].println("OponenteAbaixou");
+        				os[OPONENTE].flush();
 						os[ESSE].println("Abaixou");
             			os[ESSE].flush();
-            			os[OPONENTE].println("OponenteAbaixou");
-        				os[OPONENTE].flush();
+            			
 						jogador.estado = jogador.CROUCHING;
 						break;
 					case "Levantar":
@@ -100,6 +98,12 @@ class Servindo extends Thread {
             			os[OPONENTE].println("OponenteAtirou");
         				os[OPONENTE].flush();
             			break;
+            		case "PodePular": //o cliente dessa thread está disponível em ter seu oponente pulando
+            			os[OPONENTE].println("Pulou"); // "te libero! Pula!"
+            			os[OPONENTE].flush();
+            			os[ESSE].println("OponentePulou"); //avisa o proprio cliente que o oponente realmente pulou
+            			os[ESSE].flush();
+
 				}
         } while (!inputLine.equals(""));
 

@@ -8,33 +8,48 @@ import java.util.*;
 import java.net.*;
 
 class Client extends JFrame implements Runnable{
+	
+	class Bala {
+		Image img = null;
+		int xposicao;
+		int yposicao;
+		boolean atirando = false;
+		
+		Bala() {
+			try {
+				img = ImageIO.read(new File("bala.png"));
+			} catch (IOException e) {}
+		}
+	}
 
 	class Jogador {
 		final int STANDING    = 0;
 		final int CROUCHING   = 1;
 		final int SHOOTING    = 2;
+		Bala bala[];
 		Image img[] = null;
-		Image bala = null;
+		int municao = 0;
 		int vidas = 5;
 		int estado = STANDING;
-		int underSpace = 20;
-		int xposicao;
-		int yposicao;
 		int xinicial;
 		int yinicial;
+		int underSpace = 20;
 		boolean atirando = false;
+		boolean agindo = false;
 		
 		
 		Jogador(int numero) {
 			img = new Image[3];
+			bala = new Bala[5];
+			for(int i = 0; i < 5; i++) {
+				bala[i] = new Bala();
+			}
 			try {
-				bala = ImageIO.read(new File("bala.png"));
 				img[STANDING] = ImageIO.read(new File("standing" + numero + ".png"));
 				img[CROUCHING] = ImageIO.read(new File("agachado" + numero + ".png"));
 			}
 			catch (IOException e) {}
 		}
-
 
 		void abaixar(){ new Abaixar().start();}
 		void atirar(){ new Atirar().start();}
@@ -50,16 +65,32 @@ class Client extends JFrame implements Runnable{
 		
 		class Atirar extends Thread {
 			public void run() {
+				int valor = municao;
 				try {
-					if(!atirando) {
-						atirando = true;
-						while(xposicao > -10) {
-							xposicao = xposicao - 20;
-							sleep(10);
-							repaint();
+					if(valor > 4) {
+						municao = 0;
+					}
+					else {
+						if(!bala[valor].atirando) {
+							bala[valor].atirando = true;
+							municao++;
+							while(bala[valor].xposicao > -10) {
+								bala[valor].xposicao = bala[valor].xposicao - 10;
+								sleep(10);
+								repaint();
+								Toolkit.getDefaultToolkit().sync();
+								
+								int topo = getSize().height - jogadorB.img[jogadorB.estado].getHeight(tela) - jogadorB.underSpace;
+								int baixo = getSize().height - jogadorB.underSpace;
+								int lado = jogadorB.img[jogadorA.estado].getWidth(tela) - 200;
+								if((jogadorA.bala[valor].xposicao <= lado)&&(jogadorA.bala[valor].yposicao >= topo)&&(jogadorA.bala[valor].yposicao <= baixo)) {
+									break;
+								}
+									
+								
+							}
+							jogadorA.bala[valor].atirando = false;
 						}
-						atirando = false;
-						xposicao = xinicial;
 					}
 				}
 				catch (InterruptedException e) {}
@@ -96,17 +127,49 @@ class Client extends JFrame implements Runnable{
 						sleep(1);
 					} catch (InterruptedException e) {};
 				}
+
 				agindo = false;
 			}
 		}
 	}
 
+	class JogadorB extends Jogador {
+
+		JogadorB(int numero){
+			super(numero);
+		}
+
+		class Pular extends Thread{
+			int y = underSpace;
+			final int MAX = img[STANDING].getHeight(tela);
+			public void run(){
+				estado = STANDING;
+				while(underSpace < MAX){
+					underSpace++;
+					repaint();
+					Toolkit.getDefaultToolkit().sync();
+					try{
+						sleep(1);
+					} catch (InterruptedException e) {};
+				}
+				while(underSpace > y){
+					underSpace--;
+					repaint();
+					Toolkit.getDefaultToolkit().sync();
+					try{
+						sleep(1);
+					} catch (InterruptedException e) {};
+				}
+			
+				agindo = false;
+			}
+		}
+	}
 
 	Image fundo = null, life = null;
 	Jogador jogadorA = new Jogador(1);
-	Jogador jogadorB = new Jogador(1);
+	JogadorB jogadorB = new JogadorB(1);
 	Desenho tela = new Desenho();
-	boolean agindo = false;
 	static Scanner is = null;
 	static PrintStream os = null;
     static Thread t;
@@ -146,7 +209,11 @@ class Client extends JFrame implements Runnable{
 				-jogadorB.img[jogadorB.estado].getWidth(this), 
 				jogadorB.img[jogadorB.estado].getHeight(this), this);
 			calcula_posicao();
-			g.drawImage(jogadorA.bala, jogadorA.xposicao, jogadorA.yposicao, 10, 4, this);
+			g.drawImage(jogadorA.bala[0].img, jogadorA.bala[0].xposicao, jogadorA.bala[0].yposicao, 10, 4, this);
+			g.drawImage(jogadorA.bala[1].img, jogadorA.bala[1].xposicao, jogadorA.bala[1].yposicao, 10, 4, this);
+			g.drawImage(jogadorA.bala[2].img, jogadorA.bala[2].xposicao, jogadorA.bala[2].yposicao, 10, 4, this);
+			g.drawImage(jogadorA.bala[3].img, jogadorA.bala[3].xposicao, jogadorA.bala[3].yposicao, 10, 4, this);
+			g.drawImage(jogadorA.bala[4].img, jogadorA.bala[4].xposicao, jogadorA.bala[4].yposicao, 10, 4, this);
 		}
 		
 		public Dimension getPreferredSize() {
@@ -155,21 +222,43 @@ class Client extends JFrame implements Runnable{
 	}
 	
 	public void calcula_posicao() {
-		if(!jogadorA.atirando) {
+		int i;
+		//if(!jogadorA.agindo) {
 			if(jogadorA.estado == jogadorA.CROUCHING) {
-				jogadorA.yposicao = getSize().height - jogadorA.img[jogadorA.CROUCHING].getHeight(this) + 167;
-				jogadorA.xposicao = getSize().width - jogadorA.img[jogadorA.CROUCHING].getWidth(this) + 20;
-				jogadorA.xinicial = jogadorA.xposicao;
-				jogadorA.yinicial = jogadorA.yposicao;
+				for(i = 0; i < 4; i++) {
+					if(!jogadorA.bala[i].atirando) {
+						jogadorA.bala[i].yposicao = getSize().height - jogadorA.img[jogadorA.CROUCHING].getHeight(this) + 167;
+						jogadorA.bala[i].xposicao = getSize().width - jogadorA.img[jogadorA.CROUCHING].getWidth(this) + 20;
+					}
+				}
+				jogadorA.xinicial = jogadorA.bala[i - 1].xposicao;
+				jogadorA.yinicial = jogadorA.bala[i - 1].yposicao;
 			}
-		
-			if(jogadorA.estado == jogadorA.STANDING) {
-				jogadorA.xposicao = getSize().width - jogadorA.img[jogadorA.STANDING].getWidth(this)/2 - 86;
-				jogadorA.yposicao = getSize().height - jogadorA.img[jogadorA.STANDING].getHeight(this) + 75;
-				jogadorA.xinicial = jogadorA.xposicao;
-				jogadorA.yinicial = jogadorA.yposicao;
+			else {
+				if(!jogadorA.agindo) {
+					if(jogadorA.estado == jogadorA.STANDING) {
+						for(i = 0; i < 4; i++) {
+							if(!jogadorA.bala[i].atirando) {
+								jogadorA.bala[i].xposicao = getSize().width - jogadorA.img[jogadorA.STANDING].getWidth(this)/2 - 86;
+								jogadorA.bala[i].yposicao = getSize().height - jogadorA.img[jogadorA.STANDING].getHeight(this) + 75;
+							}
+						}
+						jogadorA.xinicial = jogadorA.bala[i - 1].xposicao;
+						jogadorA.yinicial = jogadorA.bala[i - 1].yposicao;
+					}
+				}
+				else {
+					for(i = 0; i < 4; i++) {
+						if(!jogadorA.bala[i].atirando) {
+							jogadorA.bala[i].xposicao = getSize().width - jogadorA.img[jogadorA.STANDING].getWidth(this)/2 - 86;
+							jogadorA.bala[i].yposicao = getSize().height - jogadorA.img[jogadorA.estado].getHeight(this) - jogadorA.underSpace + 100;
+						}
+					}
+					jogadorA.xinicial = jogadorA.bala[i - 1].xposicao;
+					jogadorA.yinicial = jogadorA.bala[i - 1].yposicao;
+				}
 			}
-		}
+		//}
 	}
 	
 
@@ -179,21 +268,21 @@ class Client extends JFrame implements Runnable{
 			public void keyPressed(KeyEvent e) {
 				switch (e.getKeyCode()) {
 					case KeyEvent.VK_DOWN:
-						if(!agindo){
+						if(!jogadorA.agindo){
 							outputLine = "Abaixar";
 							os.println(outputLine);
 							os.flush();
 						}
 						break;
 					case KeyEvent.VK_UP:
-						if(!agindo){
+						if(!jogadorA.agindo){
 							outputLine = "Pular";
 							os.println(outputLine);
 							os.flush();
 						}
 						break;
 					case KeyEvent.VK_SPACE:
-						calcula_posicao();
+						//calcula_posicao();
 						outputLine = "Atirar";
 						os.println(outputLine);
 						os.flush();
@@ -221,21 +310,27 @@ class Client extends JFrame implements Runnable{
             inputLine = is.nextLine();
             switch (inputLine) {
 					case "Pulou":
-						agindo = true;
+						jogadorA.agindo = true;
 						jogadorA.pular();
 						break;
 					case "Abaixou":
-						agindo = true;
+						jogadorA.agindo = true;
 						jogadorA.abaixar();
 						break;
 					case "Atirou":
 						jogadorA.atirar();
 						break;
 					case "Levantou":
-						agindo = false;
+						jogadorA.agindo = false;
 						jogadorA.iniciar();
 						break;
+					case "PossoPular?":
+						if(!jogadorB.agindo){
+							os.println("PodePular");
+						}
+						break;
 					case "OponentePulou":
+						jogadorB.agindo = true;
 						jogadorB.pular();
 						break;
 					case "OponenteAbaixou":
