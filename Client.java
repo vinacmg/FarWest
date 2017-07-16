@@ -40,8 +40,8 @@ class Client extends JFrame implements Runnable{
 		
 		Jogador(int numero) {
 			img = new Image[3];
-			bala = new Bala[5];
-			for(int i = 0; i < 5; i++) {
+			bala = new Bala[4];
+			for(int i = 0; i < 4; i++) {
 				bala[i] = new Bala();
 			}
 			try {
@@ -162,6 +162,7 @@ class Client extends JFrame implements Runnable{
 								int topo = getSize().height - jogadorA.img[jogadorA.estado].getHeight(tela) - jogadorA.underSpace;
 								int baixo = getSize().height - jogadorA.underSpace;
 								int lado = jogadorA.img[jogadorA.estado].getWidth(tela) - 180;
+								System.out.println(topo+","+baixo+","+lado+","+getSize().height+","+getSize().width);
 								if((bala[valor].xposicao >= 1200 - lado)&&(bala[valor].yposicao >= topo)&&(bala[valor].yposicao <= baixo)) {
 									break;
 								}
@@ -389,6 +390,8 @@ class Client extends JFrame implements Runnable{
 				}
 			}
 		});
+		setSize(1200,700);
+		setResizable(false);
 	    setDefaultCloseOperation(EXIT_ON_CLOSE);
 	    add(new Desenho());
 	    pack();
@@ -433,6 +436,12 @@ class Client extends JFrame implements Runnable{
 					case "OponenteLevantou":
 						jogadorB.agindo = false;
 						jogadorB.iniciar();
+						break;
+					case "PerdeuVida":
+						jogadorA.vidas--;
+						break;
+					case "Morreu":
+						jogadorA.vidas--;
 						break;
 				}
         } while (!inputLine.equals(""));
