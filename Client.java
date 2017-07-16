@@ -25,7 +25,6 @@ class Client extends JFrame implements Runnable{
 	class Jogador {
 		final int STANDING    = 0;
 		final int CROUCHING   = 1;
-		final int SHOOTING    = 2;
 		Bala bala[];
 		Image img[] = null;
 		int municao = 0;
@@ -39,7 +38,7 @@ class Client extends JFrame implements Runnable{
 		
 		
 		Jogador(int numero) {
-			img = new Image[3];
+			img = new Image[2];
 			bala = new Bala[4];
 			for(int i = 0; i < 4; i++) {
 				bala[i] = new Bala();
@@ -161,8 +160,7 @@ class Client extends JFrame implements Runnable{
 								
 								int topo = getSize().height - jogadorA.img[jogadorA.estado].getHeight(tela) - jogadorA.underSpace;
 								int baixo = getSize().height - jogadorA.underSpace;
-								int lado = jogadorA.img[jogadorA.estado].getWidth(tela) - 180;
-								System.out.println(topo+","+baixo+","+lado+","+getSize().height+","+getSize().width);
+								int lado = jogadorA.img[jogadorA.estado].getWidth(tela) - 190; //compensa o tamanho da bala em relação ao A
 								if((bala[valor].xposicao >= 1200 - lado)&&(bala[valor].yposicao >= topo)&&(bala[valor].yposicao <= baixo)) {
 									break;
 								}
@@ -204,9 +202,9 @@ class Client extends JFrame implements Runnable{
 		}
 	}
 
-	Image fundo = null, life = null, municao = null;
+	Image fundo = null, life = null, municao = null, perdeu = null, venceu = null;
 	Jogador jogadorA = new Jogador(1);
-	JogadorB jogadorB = new JogadorB(1);
+	JogadorB jogadorB = new JogadorB(2);
 	Desenho tela = new Desenho();
 	static Scanner is = null;
 	static PrintStream os = null;
@@ -215,6 +213,7 @@ class Client extends JFrame implements Runnable{
     static boolean gameOn = true;
     boolean keyPressed = false;
     int xLife;
+	boolean perdeuBool = false, venceuBool = false;
 
 	class Desenho extends JPanel{
 
@@ -223,6 +222,8 @@ class Client extends JFrame implements Runnable{
 				fundo = ImageIO.read(new File("background.png"));
 				life = ImageIO.read(new File("life.png"));
 				municao = ImageIO.read(new File("municao.png"));
+				perdeu = ImageIO.read(new File("perdeu.png"));
+				venceu = ImageIO.read(new File("venceu.png"));
 	      	} catch (IOException e) {
 		        JOptionPane.showMessageDialog(this, "A imagem não pode ser carregada!\n" + e, "Erro", JOptionPane.ERROR_MESSAGE);
 		        System.exit(1);
@@ -266,10 +267,13 @@ class Client extends JFrame implements Runnable{
 			g.drawImage(jogadorA.bala[2].img, jogadorA.bala[2].xposicao, jogadorA.bala[2].yposicao, 10, 4, this);
 			g.drawImage(jogadorA.bala[3].img, jogadorA.bala[3].xposicao, jogadorA.bala[3].yposicao, 10, 4, this);
 			//BALAS JOGADOR B
-			g.drawImage(jogadorB.bala[0].img, jogadorB.bala[0].xposicao, jogadorB.bala[0].yposicao, 10, 4, this);
-			g.drawImage(jogadorB.bala[1].img, jogadorB.bala[1].xposicao, jogadorB.bala[1].yposicao, 10, 4, this);
-			g.drawImage(jogadorB.bala[2].img, jogadorB.bala[2].xposicao, jogadorB.bala[2].yposicao, 10, 4, this);
-			g.drawImage(jogadorB.bala[3].img, jogadorB.bala[3].xposicao, jogadorB.bala[3].yposicao, 10, 4, this);
+			g.drawImage(jogadorB.bala[0].img, jogadorB.bala[0].xposicao, jogadorB.bala[0].yposicao, -10, 4, this);
+			g.drawImage(jogadorB.bala[1].img, jogadorB.bala[1].xposicao, jogadorB.bala[1].yposicao, -10, 4, this);
+			g.drawImage(jogadorB.bala[2].img, jogadorB.bala[2].xposicao, jogadorB.bala[2].yposicao, -10, 4, this);
+			g.drawImage(jogadorB.bala[3].img, jogadorB.bala[3].xposicao, jogadorB.bala[3].yposicao, -10, 4, this);
+
+			if(venceuBool) g.drawImage(venceu, getSize().width/2 - 250, getSize().height/2 - 175, 500, 350, this);
+			if(perdeuBool) g.drawImage(perdeu, getSize().width/2 - 250, getSize().height/2 - 175, 500, 350, this);
 		}
 		
 		public Dimension getPreferredSize() {
@@ -283,8 +287,8 @@ class Client extends JFrame implements Runnable{
 			if(jogadorA.estado == jogadorA.CROUCHING) {
 				for(i = 0; i < 4; i++) {
 					if(!jogadorA.bala[i].atirando) {
-						jogadorA.bala[i].yposicao = getSize().height - jogadorA.img[jogadorA.CROUCHING].getHeight(this) + 167;
-						jogadorA.bala[i].xposicao = getSize().width - jogadorA.img[jogadorA.CROUCHING].getWidth(this) + 20;
+						jogadorA.bala[i].yposicao = getSize().height - jogadorA.img[jogadorA.CROUCHING].getHeight(tela) + 167;
+						jogadorA.bala[i].xposicao = getSize().width - jogadorA.img[jogadorA.CROUCHING].getWidth(tela) + 20;
 					}
 				}
 				jogadorA.xinicial = jogadorA.bala[i - 1].xposicao;
@@ -295,8 +299,8 @@ class Client extends JFrame implements Runnable{
 					if(jogadorA.estado == jogadorA.STANDING) {
 						for(i = 0; i < 4; i++) {
 							if(!jogadorA.bala[i].atirando) {
-								jogadorA.bala[i].xposicao = getSize().width - jogadorA.img[jogadorA.STANDING].getWidth(this)/2 - 86;
-								jogadorA.bala[i].yposicao = getSize().height - jogadorA.img[jogadorA.STANDING].getHeight(this) + 75;
+								jogadorA.bala[i].xposicao = getSize().width - jogadorA.img[jogadorA.STANDING].getWidth(tela)/2 - 86;
+								jogadorA.bala[i].yposicao = getSize().height - jogadorA.img[jogadorA.STANDING].getHeight(tela) + 75;
 							}
 						}
 						jogadorA.xinicial = jogadorA.bala[i - 1].xposicao;
@@ -306,8 +310,8 @@ class Client extends JFrame implements Runnable{
 				else {
 					for(i = 0; i < 4; i++) {
 						if(!jogadorA.bala[i].atirando) {
-							jogadorA.bala[i].xposicao = getSize().width - jogadorA.img[jogadorA.STANDING].getWidth(this)/2 - 86;
-							jogadorA.bala[i].yposicao = getSize().height - jogadorA.img[jogadorA.estado].getHeight(this) - jogadorA.underSpace + 100;
+							jogadorA.bala[i].xposicao = getSize().width - jogadorA.img[jogadorA.STANDING].getWidth(tela)/2 - 86;
+							jogadorA.bala[i].yposicao = getSize().height - jogadorA.img[jogadorA.estado].getHeight(tela) - jogadorA.underSpace + 100;
 						}
 					}
 					jogadorA.xinicial = jogadorA.bala[i - 1].xposicao;
@@ -443,7 +447,16 @@ class Client extends JFrame implements Runnable{
 						break;
 					case "Morreu":
 						jogadorA.vidas--;
+						perdeuBool = true;
 						repaint();
+						gameOn = false;
+						inputLine = "";
+						break;
+					case "Venceu":
+						venceuBool = true;
+						repaint();
+						gameOn = false;
+						inputLine = "";
 						break;
 				}
         } while (!inputLine.equals(""));
