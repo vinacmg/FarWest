@@ -377,7 +377,6 @@ class Client extends JFrame implements Runnable{
 						break;
 					case KeyEvent.VK_SPACE:
 						//calcula_posicao();
-						jogadorB.atirar();
 						outputLine = "Atirar";
 						os.println(outputLine);
 						os.flush();
@@ -451,12 +450,14 @@ class Client extends JFrame implements Runnable{
 						repaint();
 						gameOn = false;
 						inputLine = "";
+						os.println(inputLine);
 						break;
 					case "Venceu":
 						venceuBool = true;
 						repaint();
 						gameOn = false;
 						inputLine = "";
+						os.println(inputLine);
 						break;
 				}
         } while (!inputLine.equals(""));
