@@ -439,9 +439,11 @@ class Client extends JFrame implements Runnable{
 						break;
 					case "PerdeuVida":
 						jogadorA.vidas--;
+						repaint();
 						break;
 					case "Morreu":
 						jogadorA.vidas--;
+						repaint();
 						break;
 				}
         } while (!inputLine.equals(""));

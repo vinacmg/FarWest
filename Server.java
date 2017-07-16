@@ -104,6 +104,7 @@ class Servindo extends Thread {
             			os[OPONENTE].flush();
             			os[ESSE].println("OponentePulou"); //avisa o proprio cliente que o oponente realmente pulou
             			os[ESSE].flush();
+            			jogador[OPONENTE].pulou();
 
 				}
         } while (!inputLine.equals(""));
