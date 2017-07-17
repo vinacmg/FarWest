@@ -214,6 +214,8 @@ class Client extends JFrame implements Runnable{
     boolean keyPressed = false;
     int xLife;
 	boolean perdeuBool = false, venceuBool = false;
+	int height, width;
+
 
 	class Desenho extends JPanel{
 
@@ -228,12 +230,13 @@ class Client extends JFrame implements Runnable{
 		        JOptionPane.showMessageDialog(this, "A imagem não pode ser carregada!\n" + e, "Erro", JOptionPane.ERROR_MESSAGE);
 		        System.exit(1);
 	      	}
+
 	    }
 		
 		public void paintComponent(Graphics g) {
 	    	super.paintComponent(g);
 	    	g.drawImage(fundo, 0, 0, getSize().width, getSize().height, this);
-
+	    	
 	    	xLife = 1140;
 	    	for(int i=0; i<jogadorA.vidas; i++){
 	    		g.drawImage(life, xLife, 10, life.getWidth(this), life.getHeight(this), this);
@@ -251,17 +254,8 @@ class Client extends JFrame implements Runnable{
 	    		g.drawImage(municao, xLife, 70, municao.getWidth(this), municao.getHeight(this), this);
 	    		xLife -= 20;
 	    	}
-
-			g.drawImage(jogadorA.img[jogadorA.estado], getSize().width - jogadorA.img[jogadorA.estado].getWidth(this) - 10,
-		 		getSize().height - jogadorA.img[jogadorA.estado].getHeight(this) - jogadorA.underSpace, 
-		 		jogadorA.img[jogadorA.estado].getWidth(this),
-		 		jogadorA.img[jogadorA.estado].getHeight(this), this);
-			g.drawImage(jogadorB.img[jogadorB.estado], jogadorB.img[jogadorB.estado].getWidth(this), 
-				getSize().height - jogadorB.img[jogadorB.estado].getHeight(this) - jogadorB.underSpace, 
-				-jogadorB.img[jogadorB.estado].getWidth(this), 
-				jogadorB.img[jogadorB.estado].getHeight(this), this);
-			calcula_posicao();
-			//BALAS JOGADOR A
+	    	calcula_posicao();
+	    	//BALAS JOGADOR A
 			g.drawImage(jogadorA.bala[0].img, jogadorA.bala[0].xposicao, jogadorA.bala[0].yposicao, 10, 4, this);
 			g.drawImage(jogadorA.bala[1].img, jogadorA.bala[1].xposicao, jogadorA.bala[1].yposicao, 10, 4, this);
 			g.drawImage(jogadorA.bala[2].img, jogadorA.bala[2].xposicao, jogadorA.bala[2].yposicao, 10, 4, this);
@@ -272,6 +266,15 @@ class Client extends JFrame implements Runnable{
 			g.drawImage(jogadorB.bala[2].img, jogadorB.bala[2].xposicao, jogadorB.bala[2].yposicao, -10, 4, this);
 			g.drawImage(jogadorB.bala[3].img, jogadorB.bala[3].xposicao, jogadorB.bala[3].yposicao, -10, 4, this);
 
+			g.drawImage(jogadorA.img[jogadorA.estado], getSize().width - jogadorA.img[jogadorA.estado].getWidth(this) - 10,
+		 		getSize().height - jogadorA.img[jogadorA.estado].getHeight(this) - jogadorA.underSpace, 
+		 		jogadorA.img[jogadorA.estado].getWidth(this),
+		 		jogadorA.img[jogadorA.estado].getHeight(this), this);
+			g.drawImage(jogadorB.img[jogadorB.estado], jogadorB.img[jogadorB.estado].getWidth(this), 
+				getSize().height - jogadorB.img[jogadorB.estado].getHeight(this) - jogadorB.underSpace, 
+				-jogadorB.img[jogadorB.estado].getWidth(this), 
+				jogadorB.img[jogadorB.estado].getHeight(this), this);
+
 			if(venceuBool) g.drawImage(venceu, getSize().width/2 - 250, getSize().height/2 - 175, 500, 350, this);
 			if(perdeuBool) g.drawImage(perdeu, getSize().width/2 - 250, getSize().height/2 - 175, 500, 350, this);
 		}
@@ -279,16 +282,19 @@ class Client extends JFrame implements Runnable{
 		public Dimension getPreferredSize() {
       		return new Dimension(1200, 700);
     	}
+
 	}
 	
 	public void calcula_posicao() {
 		int i;
+		width = tela.getSize().width;
+		height = tela.getSize().height;
 		//if(!jogadorA.agindo) {
 			if(jogadorA.estado == jogadorA.CROUCHING) {
 				for(i = 0; i < 4; i++) {
 					if(!jogadorA.bala[i].atirando) {
-						jogadorA.bala[i].yposicao = getSize().height - jogadorA.img[jogadorA.CROUCHING].getHeight(tela) + 167;
-						jogadorA.bala[i].xposicao = getSize().width - jogadorA.img[jogadorA.CROUCHING].getWidth(tela) + 20;
+						jogadorA.bala[i].yposicao = height - jogadorA.img[jogadorA.CROUCHING].getHeight(this) + 205;
+						jogadorA.bala[i].xposicao = width - jogadorA.img[jogadorA.CROUCHING].getWidth(this) + 33;
 					}
 				}
 				jogadorA.xinicial = jogadorA.bala[i - 1].xposicao;
@@ -299,8 +305,8 @@ class Client extends JFrame implements Runnable{
 					if(jogadorA.estado == jogadorA.STANDING) {
 						for(i = 0; i < 4; i++) {
 							if(!jogadorA.bala[i].atirando) {
-								jogadorA.bala[i].xposicao = getSize().width - jogadorA.img[jogadorA.STANDING].getWidth(tela)/2 - 86;
-								jogadorA.bala[i].yposicao = getSize().height - jogadorA.img[jogadorA.STANDING].getHeight(tela) + 75;
+								jogadorA.bala[i].xposicao = width - jogadorA.img[jogadorA.STANDING].getWidth(this)/2 - 76;
+								jogadorA.bala[i].yposicao = height - jogadorA.img[jogadorA.STANDING].getHeight(this) + 113;
 							}
 						}
 						jogadorA.xinicial = jogadorA.bala[i - 1].xposicao;
@@ -310,8 +316,8 @@ class Client extends JFrame implements Runnable{
 				else {
 					for(i = 0; i < 4; i++) {
 						if(!jogadorA.bala[i].atirando) {
-							jogadorA.bala[i].xposicao = getSize().width - jogadorA.img[jogadorA.STANDING].getWidth(tela)/2 - 86;
-							jogadorA.bala[i].yposicao = getSize().height - jogadorA.img[jogadorA.estado].getHeight(tela) - jogadorA.underSpace + 100;
+							jogadorA.bala[i].xposicao = width - jogadorA.img[jogadorA.STANDING].getWidth(this)/2 - 76;
+							jogadorA.bala[i].yposicao = height - jogadorA.img[jogadorA.estado].getHeight(this) - jogadorA.underSpace + 133;
 						}
 					}
 					jogadorA.xinicial = jogadorA.bala[i - 1].xposicao;
@@ -319,42 +325,41 @@ class Client extends JFrame implements Runnable{
 				}
 			}
 		//}
-			if(jogadorB.estado == jogadorB.CROUCHING) {
-				for(i = 0; i < 4; i++) {
-					if(!jogadorB.bala[i].atirando) {
-						jogadorB.bala[i].yposicao = getSize().height - jogadorB.img[jogadorB.CROUCHING].getHeight(this) + 167;
-						jogadorB.bala[i].xposicao = jogadorB.img[jogadorB.CROUCHING].getWidth(this) - 20;
-					}
+		if(jogadorB.estado == jogadorB.CROUCHING) {
+			for(i = 0; i < 4; i++) {
+				if(!jogadorB.bala[i].atirando) {
+					jogadorB.bala[i].yposicao = height - jogadorB.img[jogadorB.CROUCHING].getHeight(this) + 205;
+					jogadorB.bala[i].xposicao = jogadorB.img[jogadorB.CROUCHING].getWidth(this) - 43;
 				}
-				jogadorB.xinicial = jogadorB.bala[i - 1].xposicao;
-				jogadorB.yinicial = jogadorB.bala[i - 1].yposicao;
 			}
-			else {
-				if(!jogadorB.agindo) {
-					if(jogadorB.estado == jogadorB.STANDING) {
-						for(i = 0; i < 4; i++) {
-							if(!jogadorB.bala[i].atirando) {
-								jogadorB.bala[i].xposicao = jogadorB.img[jogadorB.STANDING].getWidth(this)/2 + 86;
-								jogadorB.bala[i].yposicao = getSize().height - jogadorB.img[jogadorB.STANDING].getHeight(this) + 75;
-							}
-						}
-						jogadorB.xinicial = jogadorB.bala[i - 1].xposicao;
-						jogadorB.yinicial = jogadorB.bala[i - 1].yposicao;
-					}
-				}
-				else {
+			jogadorB.xinicial = jogadorB.bala[i - 1].xposicao;
+			jogadorB.yinicial = jogadorB.bala[i - 1].yposicao;
+		}
+		else {
+			if(!jogadorB.agindo) {
+				if(jogadorB.estado == jogadorB.STANDING) {
 					for(i = 0; i < 4; i++) {
 						if(!jogadorB.bala[i].atirando) {
-							jogadorB.bala[i].xposicao = jogadorB.img[jogadorB.STANDING].getWidth(this)/2 - 86;
-							jogadorB.bala[i].yposicao = getSize().height - jogadorB.img[jogadorB.estado].getHeight(this) - jogadorB.underSpace + 100;
+							jogadorB.bala[i].xposicao = jogadorB.img[jogadorB.STANDING].getWidth(this)/2 + 66;
+							jogadorB.bala[i].yposicao = height - jogadorB.img[jogadorB.STANDING].getHeight(this) + 113;
 						}
 					}
 					jogadorB.xinicial = jogadorB.bala[i - 1].xposicao;
 					jogadorB.yinicial = jogadorB.bala[i - 1].yposicao;
 				}
 			}
+			else {
+				for(i = 0; i < 4; i++) {
+					if(!jogadorB.bala[i].atirando) {
+						jogadorB.bala[i].xposicao = jogadorB.img[jogadorB.STANDING].getWidth(this)/2 + 66;
+						jogadorB.bala[i].yposicao = height - jogadorB.img[jogadorB.estado].getHeight(this) - jogadorB.underSpace + 133;
+					}
+				}
+				jogadorB.xinicial = jogadorB.bala[i - 1].xposicao;
+				jogadorB.yinicial = jogadorB.bala[i - 1].yposicao;
+			}
+		}
 	}
-	
 
 	Client() {
 	    super("FarWest");
@@ -393,11 +398,10 @@ class Client extends JFrame implements Runnable{
 				}
 			}
 		});
-		setSize(1200,700);
-		setResizable(false);
-	    setDefaultCloseOperation(EXIT_ON_CLOSE);
-	    add(new Desenho());
+	    add(tela);
 	    pack();
+	    setResizable(false);
+	    setDefaultCloseOperation(EXIT_ON_CLOSE);
 	    setVisible(true);
   	}
 
