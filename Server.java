@@ -101,7 +101,7 @@ class Servindo extends Thread {
         				os[OPONENTE].flush();
         				jogador[ESSE].atirar(c);
             			break;
-            		case "PodePular": //o cliente dessa thread está disponível em ter seu oponente pulando
+            		case "PodePular": //o cliente dessa thread está disponível em ter seu oponente pulando (por conta da animação)
             			os[OPONENTE].println("Pulou"); // "te libero! Pula!"
             			os[OPONENTE].flush();
             			os[ESSE].println("OponentePulou"); //avisa o proprio cliente que o oponente realmente pulou
@@ -184,7 +184,7 @@ class Servindo extends Thread {
 							municao++;
 							bala[valor].xposicao = 964;
 							if(estado != CROUCHING) bala[valor].yposicao = underSpace + 133;
-							else bala[valor].yposicao = 100;
+							else bala[valor].yposicao = 95;
 							while(bala[valor].xposicao > -10) {
 								bala[valor].xposicao = bala[valor].xposicao - 10;
 								sleep(10);
@@ -212,7 +212,7 @@ class Servindo extends Thread {
 									}
 								}
 								else {
-									if((bala[valor].yposicao == 100) && (bala[valor].xposicao <= lado)){
+									if((bala[valor].yposicao == 95) && (bala[valor].xposicao <= (lado+20)){
 										if(jogador[OPONENTE].vidas > 1){
 											jogador[OPONENTE].vidas--;
 											os[OPONENTE].println("PerdeuVida");
@@ -253,7 +253,7 @@ class Servindo extends Thread {
 							municao++;
 							bala[valor].xposicao = 236;
 							if(estado != CROUCHING) bala[valor].yposicao = underSpace + 133;
-							else bala[valor].yposicao = 100;
+							else bala[valor].yposicao = 95;
 							while(bala[valor].xposicao < 1210) {
 								bala[valor].xposicao = bala[valor].xposicao + 10;
 								sleep(10);
@@ -281,7 +281,7 @@ class Servindo extends Thread {
 									}
 								}
 								else {
-									if((bala[valor].yposicao == 100) && (bala[valor].xposicao >= lado)){
+									if((bala[valor].yposicao == 95) && (bala[valor].xposicao >= (lado+20)){
 										if(jogador[OPONENTE].vidas > 1){
 											jogador[OPONENTE].vidas--;
 											os[OPONENTE].println("PerdeuVida");
