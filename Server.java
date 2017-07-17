@@ -24,12 +24,12 @@ class Server {
 	        }
 
 	        System.out.println("Accept "+ (i+1) +" Funcionou!");
-    		
-    		new Servindo(clientSocket).start();
+    	}
+
+    	for(int i=0; i<2; i++){
+	        new Servindo(clientSocket).start();
     	}
         
-
-
         try {
             serverSocket.close();
         } catch (IOException e) {
@@ -39,46 +39,79 @@ class Server {
 }
 
 class Servindo extends Thread {
-    Socket clientSocket;
-    PrintStream os;
-    Jogador1 jogador = new Jogador1();
+    Socket clientSocket;    
+    static PrintStream[] os = new PrintStream[2];
+    static JogadorCliente[] jogador = new JogadorCliente[2];
     static int cont = 0;
+    final int ESSE, OPONENTE;
+    char c;
 
     Servindo(Socket[] clientSocket) {
-    	final int ATUAL = cont;
+    	this.clientSocket = clientSocket[cont];
+    	if(cont == 0){
+			ESSE = 0;
+    		OPONENTE = 1;
+    		jogador[ESSE] = new JogadorCliente();
+    		c = 'A';
+    	}
+    	else{
+			ESSE = 1;
+    		OPONENTE = 0;
+    		jogador[ESSE] = new JogadorCliente();
+    		c = 'B';
+    	}
+		
     	cont++;
-        this.clientSocket = clientSocket[ATUAL];
     }
 
     public void run() {
         try {
         Scanner is = new Scanner(clientSocket.getInputStream());
-        os = new PrintStream(clientSocket.getOutputStream());
+        os[ESSE] = new PrintStream(clientSocket.getOutputStream());
         String inputLine, outputLine;
 
         do {
             inputLine = is.nextLine();
             switch (inputLine) {
 					case "Pular":
-						os.println("Pulou");
-						jogador.pulou();
-            			os.flush();
+						os[OPONENTE].println("PossoPular?");  //verifica com o oponente se pode pular (por conta da animação)
+        				os[OPONENTE].flush();
 						break;
 					case "Abaixar":
-						os.println("Abaixou");
-            			os.flush();
-						jogador.estado = jogador.CROUCHING;
+						os[OPONENTE].println("OponenteAbaixou");
+        				os[OPONENTE].flush();
+						os[ESSE].println("Abaixou");
+            			os[ESSE].flush();
+            			
+						jogador[ESSE].estado = jogador[ESSE].CROUCHING;
 						break;
-					case "Levantou":
-						jogador.estado = jogador.STANDING;
+					case "Levantar":
+						os[ESSE].println("Levantou");
+            			os[ESSE].flush();
+            			os[OPONENTE].println("OponenteLevantou");
+        				os[OPONENTE].flush();
+						jogador[ESSE].estado = jogador[ESSE].STANDING;
 						break;
 					case "Estado":
 					    inputLine = is.nextLine();
+					case "Atirar":
+						os[ESSE].println("Atirou");
+            			os[ESSE].flush();
+            			os[OPONENTE].println("OponenteAtirou");
+        				os[OPONENTE].flush();
+        				jogador[ESSE].atirar(c);
+            			break;
+            		case "PodePular": //o cliente dessa thread está disponível em ter seu oponente pulando
+            			os[OPONENTE].println("Pulou"); // "te libero! Pula!"
+            			os[OPONENTE].flush();
+            			os[ESSE].println("OponentePulou"); //avisa o proprio cliente que o oponente realmente pulou
+            			os[ESSE].flush();
+            			jogador[OPONENTE].pulou();
 
 				}
         } while (!inputLine.equals(""));
 
-        os.close();
+        os[ESSE].close();
         is.close();
         clientSocket.close();
 
@@ -88,52 +121,198 @@ class Servindo extends Thread {
         System.out.println("Conexacao terminada pelo cliente");
         }
     }
-	
-}
 
-
-
-class Jogador1 {
+	class JogadorCliente {
 	
-	final int STANDING    = 0;
-	final int CROUCHING   = 1;
-	int vidas = 5;
-	int estado = STANDING;
-	int xposicao = 972;
-	int yposicao = 548;
-	int underSpace = 20;
-	int delta = 262;
-	
-	
-	Jogador1() {
-	}
-
-	void pulou(){
-		new Pulou().start();
-	}
-    
-    class Pulou extends Thread{
-		int y = underSpace;
-		final int MAX = delta;
-		public void run(){
-			estado = STANDING;
-			while(underSpace < MAX){
-				underSpace++;
-				try{
-					sleep(1);
-				} catch (InterruptedException e) {};
-			}
-			while(underSpace > y){
-				underSpace--;
-				try{
-					sleep(1);
-				} catch (InterruptedException e) {};
+		final int STANDING    = 0;
+		final int CROUCHING   = 1;
+		int vidas = 5;
+		int municao = 0;
+		int estado = STANDING;
+		int underSpace = 20;
+		int delta = 266;
+		BalaServer[] bala;
+		
+		
+		JogadorCliente() {
+			bala = new BalaServer[4];
+			for(int i = 0; i < 4; i++) {
+				bala[i] = new BalaServer();
 			}
 		}
+
+		void pulou(){
+			new Pulou().start();
+		}
+	    
+		void atirar(char c){
+			if(c == 'A') new AtirouA().start();
+			else new AtirouB().start();
+		}
+
+	    class Pulou extends Thread{
+			int y = underSpace;
+			final int MAX = delta;
+			public void run(){
+				estado = STANDING;
+				while(underSpace < MAX){
+					underSpace+=14;
+					try{
+						sleep(30);
+					} catch (InterruptedException e) {};
+				}
+				while(underSpace > y){
+					underSpace-=14;
+					try{
+						sleep(30);
+					} catch (InterruptedException e) {};
+				}
+			}
+		}
+
+		class AtirouA extends Thread {
+
+			public void run() {
+				int valor = municao;
+				try {
+					if(valor >= 4) {
+						municao = 0;
+					}
+					else {
+						if(!bala[valor].atirando) {
+							bala[valor].atirando = true;
+							municao++;
+							bala[valor].xposicao = 964;
+							if(estado != CROUCHING) bala[valor].yposicao = underSpace + 133;
+							else bala[valor].yposicao = 100;
+							while(bala[valor].xposicao > -10) {
+								bala[valor].xposicao = bala[valor].xposicao - 10;
+								sleep(10);
+								
+
+								int lado = 140;							
+								if(jogador[OPONENTE].estado != CROUCHING){
+									int topo = jogador[OPONENTE].delta + jogador[OPONENTE].underSpace;
+									int baixo = topo - jogador[OPONENTE].delta;
+									if((bala[valor].xposicao <= lado)&&(bala[valor].yposicao <= topo)&&(bala[valor].yposicao >= baixo)) {
+										if(jogador[OPONENTE].vidas > 1){
+											jogador[OPONENTE].vidas--;
+											os[OPONENTE].println("PerdeuVida");
+											System.out.println("B PerdeuVida");
+											os[OPONENTE].flush();
+										}
+										else{
+											jogador[OPONENTE].vidas--;
+											os[OPONENTE].println("Morreu");
+											System.out.println("B Morreu");
+											os[OPONENTE].flush();
+											os[ESSE].println("Venceu");
+										}
+										break;
+									}
+								}
+								else {
+									if((bala[valor].yposicao == 100) && (bala[valor].xposicao <= lado)){
+										if(jogador[OPONENTE].vidas > 1){
+											jogador[OPONENTE].vidas--;
+											os[OPONENTE].println("PerdeuVida");
+											System.out.println("B PerdeuVida");
+											os[OPONENTE].flush();
+										}
+										else{
+											jogador[OPONENTE].vidas--;
+											os[OPONENTE].println("Morreu");
+											System.out.println("B Morreu");
+											os[OPONENTE].flush();
+											os[ESSE].println("Venceu");
+										}
+										break;
+									}
+								}
+								
+							}
+							bala[valor].atirando = false;
+						}
+					}
+				}
+				catch (InterruptedException e) {}
+			}
+		}
+
+		class AtirouB extends Thread {
+
+			public void run() {
+				int valor = municao;
+				try {
+					if(valor >= 4) {
+						municao = 0;
+					}
+					else {
+						if(!bala[valor].atirando) {
+							bala[valor].atirando = true;
+							municao++;
+							bala[valor].xposicao = 236;
+							if(estado != CROUCHING) bala[valor].yposicao = underSpace + 133;
+							else bala[valor].yposicao = 100;
+							while(bala[valor].xposicao < 1210) {
+								bala[valor].xposicao = bala[valor].xposicao + 10;
+								sleep(10);
+								
+
+								int lado = 970;							
+								if(jogador[OPONENTE].estado != CROUCHING){
+									int topo = jogador[OPONENTE].delta + jogador[OPONENTE].underSpace;
+									int baixo = topo - jogador[OPONENTE].delta;
+									if((bala[valor].xposicao >= lado)&&(bala[valor].yposicao <= topo)&&(bala[valor].yposicao >= baixo)) {
+										if(jogador[OPONENTE].vidas > 1){
+											jogador[OPONENTE].vidas--;
+											os[OPONENTE].println("PerdeuVida");
+											System.out.println("A PerdeuVida");
+											os[OPONENTE].flush();
+										}
+										else{
+											jogador[OPONENTE].vidas--;
+											os[OPONENTE].println("Morreu");
+											System.out.println("A Morreu");
+											os[OPONENTE].flush();
+											os[ESSE].println("Venceu");
+										}
+										break;
+									}
+								}
+								else {
+									if((bala[valor].yposicao == 100) && (bala[valor].xposicao >= lado)){
+										if(jogador[OPONENTE].vidas > 1){
+											jogador[OPONENTE].vidas--;
+											os[OPONENTE].println("PerdeuVida");
+											System.out.println("A PerdeuVida");
+											os[OPONENTE].flush();
+										}
+										else{
+											jogador[OPONENTE].vidas--;
+											os[OPONENTE].println("Morreu");
+											System.out.println("A Morreu");
+											os[OPONENTE].flush();
+											os[ESSE].println("Venceu");
+										}
+										break;
+									}
+								}
+								
+							}
+							bala[valor].atirando = false;
+						}
+					}
+				}
+				catch (InterruptedException e) {}
+			}
+		}
+		class BalaServer {
+
+			int xposicao;
+			int yposicao;
+			boolean atirando = false;
+		}
 	}
-}
-
-class Jogador2 extends Jogador1{
-
 }
 
