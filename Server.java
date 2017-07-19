@@ -212,7 +212,7 @@ class Servindo extends Thread {
 									}
 								}
 								else {
-									if((bala[valor].yposicao == 95) && (bala[valor].xposicao <= (lado+20)){
+									if((bala[valor].yposicao == 95) && (bala[valor].xposicao <= (lado+20))){
 										if(jogador[OPONENTE].vidas > 1){
 											jogador[OPONENTE].vidas--;
 											os[OPONENTE].println("PerdeuVida");
@@ -281,7 +281,7 @@ class Servindo extends Thread {
 									}
 								}
 								else {
-									if((bala[valor].yposicao == 95) && (bala[valor].xposicao >= (lado+20)){
+									if((bala[valor].yposicao == 95) && (bala[valor].xposicao >= (lado+20))){
 										if(jogador[OPONENTE].vidas > 1){
 											jogador[OPONENTE].vidas--;
 											os[OPONENTE].println("PerdeuVida");
